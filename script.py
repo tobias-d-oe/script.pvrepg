@@ -30,13 +30,22 @@ import json
 #PVR.EPG.Writer		OK
 ############################
 
+__addon__ = xbmcaddon.Addon()
+__addonID__ = __addon__.getAddonInfo('id')
+__addonDir__            = __addon__.getAddonInfo("path")
+__settings__   = xbmcaddon.Addon(id='script.pvrepg')
+__addonname__ = __addon__.getAddonInfo('name')
+__version__ = __addon__.getAddonInfo('version')
+__path__ = __addon__.getAddonInfo('path')
+__LS__ = __addon__.getLocalizedString
+__icon__ = xbmc.translatePath(os.path.join(__path__, 'icon.png'))
 
 
 def writeLog(message, level=xbmc.LOGNOTICE):
         try:
-            xbmc.log('[TEST TEST]: %s' % ( message.encode('utf-8')), level)
+            xbmc.log('[%s %s]: %s' % (__addonID__, __version__, message.encode('utf-8')), level)
         except Exception:
-            xbmc.log('[TEST TEST]: Fatal: Message could not displayed', xbmc.LOGERROR)
+            xbmc.log('[%s %s]: Fatal: Message could not displayed' % (__addonID__, __version__), xbmc.LOGERROR)
 
 ################################################
 # Gather current player ID
@@ -142,7 +151,12 @@ def set_current_infostrings():
     channeltype = playerinfo['type']
 
     res=get_broadcasts(channelid)
-    genre=', '.join(res['genre'])
+    writeLog("BroadCasts %s %s %s %s %s" % (playerinfo, channellabel,title,channelid,res),level=xbmc.LOGDEBUG)
+    writeLog("BroadCastsInfo: [ Channel: %s Title: %s ChannelID: %s]" % (channellabel,title,channelid),level=xbmc.LOGNOTICE)
+    try:
+      genre=', '.join(res['genre'])
+    except:
+      genre=""
     channellogo=pvrchannelid2logo(channelid)
     starttime=res['starttime'].split(" ")[1]
     endtime=res['endtime'].split(" ")[1]
@@ -156,7 +170,10 @@ def set_current_infostrings():
     WINDOW                  = xbmcgui.Window( 10000 )
 
     WINDOW.setProperty( "PVR.EPG.Title", res['title'] )
-    WINDOW.setProperty( "PVR.EPG.Plot", res['plot'] )
+    if res['plot'] == '':
+	WINDOW.setProperty( "PVR.EPG.Plot", res['plotoutline'] )
+    else:
+    	WINDOW.setProperty( "PVR.EPG.Plot", res['plot'] )
     WINDOW.setProperty( "PVR.EPG.Genre", genre )
     WINDOW.setProperty( "PVR.EPG.StartTime", starttime )
     WINDOW.setProperty( "PVR.EPG.StartDate", startdate )
